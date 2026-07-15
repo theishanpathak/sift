@@ -3,6 +3,10 @@ from datetime import datetime
 
 
 class SourceDocument(BaseModel):
+    """
+    Raw text pulled from a single source during ingestion.
+    This is the output of the ingestion layer and the input to extraction.
+    """
     source_name: str
     url: str | None = None
     raw_text: str
@@ -10,6 +14,13 @@ class SourceDocument(BaseModel):
 
 
 class ExtractionResult(BaseModel):
+    """
+    Structured facts pulled from raw source text by the extraction layer.
+    This is intentionally "raw findings," not polished prose — funding_mentions,
+    founder_mentions, and market_signals are lists of facts, not written
+    narrative.
+    """
+
     company_name: str
     description: str
     funding_stage: str | None = None
@@ -19,6 +30,11 @@ class ExtractionResult(BaseModel):
 
 
 class Snapshot(BaseModel):
+    """
+    Final, polished due diligence snapshot returned to the frontend.
+    This is the output of the synthesis layer — the only place in the
+    pipeline where prose and judgment calls (like risk_flags) get written.
+    """
     company_name: str
     summary: str
     market_signal: str
