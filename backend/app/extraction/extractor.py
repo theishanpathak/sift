@@ -2,15 +2,24 @@ from openai import OpenAI
 from app.models import SourceDocument, ExtractionResult
 
 client = OpenAI()
-
+MODEL = "gpt-4o-mini"
 
 def extract_facts(company_name: str, sources: list[SourceDocument]) -> ExtractionResult:
+    """
+    Extraction layer: first AI call in the pipeline. Takes raw, possibly
+    noisy source text and returns validated structured facts matching
+    ExtractionResult.
+
+    Uses OpenAI's structured outputs (.parse() with response_format=ExtractionResult)
+    so the model's output is guaranteed to match our schema, no manual
+    JSON parsing needed.
+    """
     combined_text = "\n\n---\n\n".join(
         f"Source: {s.source_name}\n{s.raw_text}" for s in sources
     )
 
     completion = client.beta.chat.completions.parse(
-        model="gpt-4o-mini",
+        model=MODEL,
         messages=[
             {
                 "role": "system",
@@ -28,7 +37,7 @@ def extract_facts(company_name: str, sources: list[SourceDocument]) -> Extractio
                 "content": f"Company: {company_name}\n\nSources:\n{combined_text}",
             },
         ],
-        response_format=ExtractionResult
+        response_format=ExtractionResult,
     )
 
     return completion.choices[0].message.parsed
