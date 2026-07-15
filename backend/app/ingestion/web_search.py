@@ -1,8 +1,5 @@
 from app.models import SourceDocument
 from tavily import TavilyClient
-from dotenv import load_dotenv
-
-load_dotenv()
 
 client = TavilyClient()
 
