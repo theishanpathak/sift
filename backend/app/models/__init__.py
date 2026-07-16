@@ -45,6 +45,7 @@ class Snapshot(BaseModel):
     funding_stage: str | None = None
     founder_background: str
     risk_flags: list[str]
+    sources: list[str] = Field(default_factory=list)
 
 
 class SnapshotRequest(BaseModel):

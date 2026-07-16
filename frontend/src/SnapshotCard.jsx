@@ -47,6 +47,25 @@ export default function SnapshotCard({ snapshot }) {
           ))}
         </ul>
       </Section>
+
+      {snapshot.sources?.length > 0 && (
+        <Section label="Sources">
+          <ul className="flex flex-col gap-1">
+            {snapshot.sources.map((url, i) => (
+              <li key={i} className="truncate">
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-xs text-slate underline decoration-slate/40 underline-offset-2 hover:text-signal"
+                >
+                  {url}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
     </div>
   );
 }
