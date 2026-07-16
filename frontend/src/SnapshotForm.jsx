@@ -12,7 +12,7 @@ function SnapshotForm({ query, setQuery, onSubmit, disabled }) {
                 type='text'
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="Enter a startup name"
+                placeholder="Enter a startup name to get started"
                 disabled={disabled}
                 className="flex-1 rounded-md border border-slate/30 bg-transparent px-4 py-3
                    font-body text-paper placeholder:text-slate/60
