@@ -25,6 +25,19 @@ export default function SnapshotCard({ snapshot }) {
         <p className="font-body text-ink/90">{snapshot.market_signal}</p>
       </Section>
 
+      {snapshot.key_figures?.length > 0 && (
+        <Section label="Key Figures">
+          <ul className="flex flex-col gap-1.5">
+            {snapshot.key_figures.map((figure, i) => (
+              <li key={i} className="flex gap-2 font-body text-sm text-ink/90">
+                <span className="font-mono text-signal">→</span>
+                <span>{figure}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
       <Section label="Funding Stage">
         <p className="font-body text-ink/90">
           {snapshot.funding_stage ?? "Not disclosed"}

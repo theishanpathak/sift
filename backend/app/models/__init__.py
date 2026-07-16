@@ -31,6 +31,19 @@ class ExtractionResult(BaseModel):
     funding_mentions: list[str] = Field(default_factory=list)
     founder_mentions: list[str] = Field(default_factory=list)
     market_signals: list[str] = Field(default_factory=list)
+    key_figures: list[str] = Field(
+        default_factory=list,
+        description="Specific quantitative facts found in the source text — "
+                 "fees, percentages, dollar amounts, raise limits, growth "
+                 "rates, valuations, user/revenue numbers. Each entry must "
+                 "include enough context to be unambiguous (e.g. what "
+                 "regulation, timeframe, or investor type a figure applies "
+                 "to), e.g. '7.9% success fee on funds raised' or "
+                 "'$5M annual raise limit under Reg CF for non-accredited "
+                 "investors'. If two sources give conflicting figures for "
+                 "the same thing, include both and note that they conflict "
+                 "rather than picking one."
+    )
 
 
 class Snapshot(BaseModel):
@@ -45,6 +58,7 @@ class Snapshot(BaseModel):
     funding_stage: str | None = None
     founder_background: str
     risk_flags: list[str]
+    key_figures: list[str] = Field(default_factory=list)
     sources: list[str] = Field(default_factory=list)
 
 

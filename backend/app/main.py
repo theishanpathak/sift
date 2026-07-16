@@ -67,4 +67,5 @@ def get_snapshot(request: SnapshotRequest) -> Snapshot:
         if s.url and s.url not in seen:
             snapshot_sources.append(s.url)
     snapshot.sources = snapshot_sources
+    snapshot.key_figures = extraction.key_figures
     return snapshot
