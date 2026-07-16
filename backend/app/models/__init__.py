@@ -21,7 +21,11 @@ class ExtractionResult(BaseModel):
     narrative.
     """
 
-    company_name: str
+    company_name: str = Field(
+        description="The company's real, properly capitalized official name, "
+                    "as it appears in the source text — not necessarily matching "
+                    "the input query's casing or wording."
+    )
     description: str
     funding_stage: str | None = None
     funding_mentions: list[str] = Field(default_factory=list)

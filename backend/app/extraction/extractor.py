@@ -4,6 +4,7 @@ from app.models import SourceDocument, ExtractionResult
 client = OpenAI()
 MODEL = "gpt-4o-mini"
 
+
 def extract_facts(company_name: str, sources: list[SourceDocument]) -> ExtractionResult:
     """
     Extraction layer: first AI call in the pipeline. Takes raw, possibly
@@ -29,7 +30,9 @@ def extract_facts(company_name: str, sources: list[SourceDocument]) -> Extractio
                     f"the company '{company_name}'. Ignore unrelated companies, "
                     "third-party review site boilerplate, star ratings, and any "
                     "content not directly about this company. If a fact isn't "
-                    "present in the sources, leave it blank or empty rather than guessing."
+                    "present in the sources, leave it blank or empty rather than guessing. "
+                    "Determine the company's actual, correctly capitalized name from the "
+                    "source text itself — do not simply repeat the query as typed."
                 ),
             },
             {

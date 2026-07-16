@@ -16,7 +16,7 @@ def fetch_sources(query: str) -> list[SourceDocument]:
     Returns an empty list if nothing is found; it's up to a later stage
     (extraction or the API layer) to decide whether that counts as an error.
     """
-    response = client.search(f"{query} startup company", max_results = 3)
+    response = client.search(f"{query} startup company", max_results = 5)
 
     sources = []
     for result in response["results"]:
