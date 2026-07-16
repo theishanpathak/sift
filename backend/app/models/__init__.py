@@ -41,3 +41,9 @@ class Snapshot(BaseModel):
     funding_stage: str | None = None
     founder_background: str
     risk_flags: list[str]
+
+
+class SnapshotRequest(BaseModel):
+    
+    """ Request body for POST /api/snapshot """
+    query: str = Field(min_length=1)
