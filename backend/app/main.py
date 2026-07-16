@@ -23,6 +23,7 @@ app.add_middleware(
 @app.post("/api/snapshot", response_model=Snapshot)
 def get_snapshot(request: SnapshotRequest) -> Snapshot:
     sources = fetch_sources(request.query)
+  
 
     if not sources:
         raise HTTPException(
@@ -32,7 +33,22 @@ def get_snapshot(request: SnapshotRequest) -> Snapshot:
 
     try:
         extraction = extract_facts(request.query, sources)
+
+        if(
+            not extraction.description
+            and not extraction.funding_mentions 
+            and not extraction.founder_mentions 
+            and not extraction.market_signals
+        ):
+            raise HTTPException(
+                status_code=404,
+                detail=f"No relevant information found for '{request.query}'. Try a more specific company name.",
+            )
+
+    
         snapshot = synthesize_snapshot(extraction)
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=502,

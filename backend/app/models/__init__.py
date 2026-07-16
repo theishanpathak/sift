@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 
 
@@ -44,6 +44,14 @@ class Snapshot(BaseModel):
 
 
 class SnapshotRequest(BaseModel):
-    
+
     """ Request body for POST /api/snapshot """
     query: str = Field(min_length=1)
+
+    @field_validator("query")
+    @classmethod
+    def strip_and_validate(cls, v: str) -> str:
+        stripped = v.strip()
+        if not stripped:
+            raise ValueError("query cannot be empty or whitespace")
+        return stripped
