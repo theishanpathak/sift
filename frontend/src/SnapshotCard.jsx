@@ -6,15 +6,18 @@ export default function SnapshotCard({ snapshot }) {
           <h2 className="font-body text-3xl font-semibold tracking-tight">
             {snapshot.company_name}
           </h2>
-          <p className="mt-1 font-mono text-xs text-slate">
-            sifted just now
-          </p>
+          <p className="mt-1 font-mono text-xs text-slate">sifted just now</p>
         </div>
-        {snapshot.funding_stage && (
-          <span className="whitespace-nowrap rounded-full bg-signal/15 px-3 py-1 font-mono text-xs text-signal">
-            {snapshot.funding_stage}
+        <div className="flex flex-col items-end gap-2">
+          {snapshot.funding_stage && (
+            <span className="whitespace-nowrap rounded-full bg-signal/15 px-3 py-1 font-mono text-xs text-signal">
+              {snapshot.funding_stage}
+            </span>
+          )}
+          <span className="whitespace-nowrap rounded-full bg-brick/15 px-3 py-1 font-mono text-xs text-brick">
+            Risk: {snapshot.overall_risk_rating}
           </span>
-        )}
+        </div>
       </div>
 
       <Section label="Summary">
@@ -48,14 +51,32 @@ export default function SnapshotCard({ snapshot }) {
         <p className="font-body text-ink/90">{snapshot.founder_background}</p>
       </Section>
 
+      {snapshot.competitors?.length > 0 && (
+        <Section label="Competitors">
+          <div className="flex flex-wrap gap-2">
+            {snapshot.competitors.map((name, i) => (
+              <span
+                key={i}
+                className="rounded-full bg-ink/5 px-3 py-1 font-body text-sm text-ink/80"
+              >
+                {name}
+              </span>
+            ))}
+          </div>
+        </Section>
+      )}
+
       <Section label="Risk Flags">
         <ul className="flex flex-col gap-2">
-          {snapshot.risk_flags.map((flag, i) => (
+          {snapshot.risk_flags.map((item, i) => (
             <li
               key={i}
-              className="rounded-md border-l-2 border-brick bg-brick/5 px-3 py-2 font-body text-sm text-ink/90"
+              className="flex items-start gap-2 rounded-md border-l-2 border-brick bg-brick/5 px-3 py-2 font-body text-sm text-ink/90"
             >
-              {flag}
+              <span className="mt-0.5 shrink-0 rounded-full bg-brick/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-brick">
+                {item.severity}
+              </span>
+              <span>{item.flag}</span>
             </li>
           ))}
         </ul>
