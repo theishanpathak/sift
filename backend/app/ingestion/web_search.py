@@ -1,6 +1,7 @@
 import re
 
 from tavily import TavilyClient
+from urllib.parse import urlparse
 
 from app.models import SourceDocument
 
@@ -16,13 +17,21 @@ def _clean_text(text: str) -> str:
     text = re.sub(r'\n{3,}', '\n\n', text)
     return text.strip()
 
+def _normalize_url(url: str) -> str:
+    """Normalize a URL for comparison purposes (dedup only, not for display)."""
+    parsed = urlparse(url)
+    netloc = parsed.netloc.replace("www.", "").lower()
+    path = parsed.path.rstrip("/")
+    return f"{netloc}{path}"
+
 def _dedupe_by_url(sources: list[SourceDocument]) -> list[SourceDocument]:
-    """Removes duplicate SourceDocuments by URL, keeping the first occurrence."""
+    """Removes duplicate SourceDocuments by normalized URL, keeping the first occurrence."""
     seen = set()
     deduped = []
     for s in sources:
-        if s.url not in seen:
-            seen.add(s.url)
+        key = _normalize_url(s.url)
+        if key not in seen:
+            seen.add(key)
             deduped.append(s)
     return deduped
 
@@ -39,7 +48,7 @@ def fetch_sources(query: str, min_score: float = 0.3) -> list[SourceDocument]:
             return []
         
         title = direct[0].source_name
-        supplementary = _fetch_from_search(title, min_score=min_score, max_results=3)
+        supplementary = _fetch_from_search(title, min_score=min_score, max_results=7)
 
         return _dedupe_by_url(direct + supplementary)
     

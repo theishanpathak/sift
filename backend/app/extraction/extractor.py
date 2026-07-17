@@ -36,7 +36,8 @@ def extract_facts(company_name: str, sources: list[SourceDocument]) -> Extractio
                     "Pay special attention to specific numbers — fees, percentages, dollar "
                     "amounts, raise limits, growth rates, valuations — and capture them "
                     "precisely in key_figures, even if they don't fit neatly into the "
-                    "other fields."
+                    "other fields. Also note any competitors or direct alternatives "
+                    "explicitly named in the source text."
                 ),
             },
             {

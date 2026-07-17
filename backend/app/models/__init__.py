@@ -44,6 +44,13 @@ class ExtractionResult(BaseModel):
                  "the same thing, include both and note that they conflict "
                  "rather than picking one."
     )
+    competitors: list[str] = Field(
+        default_factory=list,
+        description="Named competitors or direct alternatives mentioned in the "
+                     "source text. Only include companies explicitly named as "
+                     "competitors, alternatives, or operating in the same space "
+                     "— do not infer or guess competitors not mentioned."
+    )
 
 
 class Snapshot(BaseModel):
@@ -59,6 +66,7 @@ class Snapshot(BaseModel):
     founder_background: str
     risk_flags: list[str]
     key_figures: list[str] = Field(default_factory=list)
+    competitors: list[str] = Field(default_factory=list)
     sources: list[str] = Field(default_factory=list)
 
 

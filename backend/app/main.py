@@ -68,4 +68,5 @@ def get_snapshot(request: SnapshotRequest) -> Snapshot:
             snapshot_sources.append(s.url)
     snapshot.sources = snapshot_sources
     snapshot.key_figures = extraction.key_figures
+    snapshot.competitors = extraction.competitors
     return snapshot
