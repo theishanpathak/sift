@@ -24,7 +24,7 @@ def _normalize_url(url: str) -> str:
     path = parsed.path.rstrip("/")
     return f"{netloc}{path}"
 
-def _dedupe_by_url(sources: list[SourceDocument]) -> list[SourceDocument]:
+def dedupe_by_url(sources: list[SourceDocument]) -> list[SourceDocument]:
     """Removes duplicate SourceDocuments by normalized URL, keeping the first occurrence."""
     seen = set()
     deduped = []
@@ -48,9 +48,9 @@ def fetch_sources(query: str, min_score: float = 0.3) -> list[SourceDocument]:
             return []
         
         title = direct[0].source_name
-        supplementary = _fetch_from_search(title, min_score=min_score, max_results=7)
+        supplementary = _fetch_from_search(title, min_score=min_score, max_results=5)
 
-        return _dedupe_by_url(direct + supplementary)
+        return dedupe_by_url(direct + supplementary)
     
     return _fetch_from_search(query, min_score=min_score, max_results=5)
 
@@ -76,6 +76,7 @@ def _fetch_from_search(query: str, min_score: float = 0.3, max_results: int = 5)
 
 def _fetch_from_url(url: str) -> list[SourceDocument]:
     """Fetches a single page directly via Tavily's extract endpoint."""
+    print(f"Calling extract with url={url!r}")
     response = client.extract(urls=[url])
 
     sources = []

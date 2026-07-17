@@ -1,6 +1,10 @@
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
+from typing import Literal
 
+class RiskFlag(BaseModel):
+    flag: str
+    severity: Literal["low", "medium", "high"]
 
 class SourceDocument(BaseModel):
     """
@@ -33,14 +37,13 @@ class ExtractionResult(BaseModel):
     market_signals: list[str] = Field(default_factory=list)
     key_figures: list[str] = Field(
         default_factory=list,
-        description="Specific quantitative facts found in the source text — "
-                 "fees, percentages, dollar amounts, raise limits, growth "
-                 "rates, valuations, user/revenue numbers. Each entry must "
-                 "include enough context to be unambiguous (e.g. what "
-                 "regulation, timeframe, or investor type a figure applies "
-                 "to), e.g. '7.9% success fee on funds raised' or "
-                 "'$5M annual raise limit under Reg CF for non-accredited "
-                 "investors'. If two sources give conflicting figures for "
+        description="Specific quantitative facts about the company's own actual "
+                 "business — fees, percentages, dollar amounts, raise limits, "
+                 "growth rates, valuations, user/revenue numbers. Do not "
+                 "include example prices, demo transactions, or illustrative "
+                 "figures shown for demonstration purposes on a marketing "
+                 "page. Each entry must include enough context to be "
+                 "unambiguous. If two sources give conflicting figures for "
                  "the same thing, include both and note that they conflict "
                  "rather than picking one."
     )
@@ -52,7 +55,10 @@ class ExtractionResult(BaseModel):
                      "— do not infer or guess competitors not mentioned."
     )
 
+class KeyFiguresList(BaseModel):
+    key_figures: list[str]
 
+    
 class Snapshot(BaseModel):
     """
     Final, polished due diligence snapshot returned to the frontend.
@@ -64,7 +70,8 @@ class Snapshot(BaseModel):
     market_signal: str
     funding_stage: str | None = None
     founder_background: str
-    risk_flags: list[str]
+    risk_flags: list[RiskFlag]
+    overall_risk_rating: Literal["low", "medium", "medium-high", "high"]
     key_figures: list[str] = Field(default_factory=list)
     competitors: list[str] = Field(default_factory=list)
     sources: list[str] = Field(default_factory=list)

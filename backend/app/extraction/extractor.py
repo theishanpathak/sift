@@ -1,5 +1,5 @@
 from openai import OpenAI
-from app.models import SourceDocument, ExtractionResult
+from app.models import SourceDocument, ExtractionResult, KeyFiguresList
 
 client = OpenAI()
 MODEL = "gpt-4o-mini"
@@ -36,7 +36,15 @@ def extract_facts(company_name: str, sources: list[SourceDocument]) -> Extractio
                     "Pay special attention to specific numbers — fees, percentages, dollar "
                     "amounts, raise limits, growth rates, valuations — and capture them "
                     "precisely in key_figures, even if they don't fit neatly into the "
-                    "other fields. Also note any competitors or direct alternatives "
+                    "other fields. Only include figures that describe the company's own "
+                    "actual business metrics (revenue, users, funding, pricing tiers, "
+                    "growth rates, etc.) — do not include example prices, sample "
+                    "transactions, demo UI content, or illustrative figures that a "
+                    "company's marketing page might show for demonstration purposes. "
+                    "If multiple sources mention the same fact (e.g. the same dollar figure "
+                    "or statistic), include it only once in key_figures — do not repeat the "
+                    "same fact reworded from different sources."
+                    "Also note any competitors or direct alternatives "
                     "explicitly named in the source text."
                 ),
             },
@@ -48,4 +56,44 @@ def extract_facts(company_name: str, sources: list[SourceDocument]) -> Extractio
         response_format=ExtractionResult,
     )
 
-    return completion.choices[0].message.parsed
+    extraction = completion.choices[0].message.parsed
+    return _dedupe_key_figures(extraction)
+
+
+def _dedupe_key_figures(extraction: ExtractionResult) -> ExtractionResult:
+    """
+    Merges duplicate or reworded-repeat facts within key_figures (common
+    when multiple sources mention the same figure with different wording),
+    and caps the result to the 5 most meaningful figures.
+    """
+    if len(extraction.key_figures) <= 1:
+        return extraction
+
+    completion = client.beta.chat.completions.parse(
+        model=MODEL,
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You will be given a list of extracted facts about a company. "
+                    "Some entries may be the same underlying fact stated with "
+                    "different wording — merge those into a single entry using "
+                    "the clearest phrasing. Do not remove genuinely distinct "
+                    "facts, and do not add new ones. Return at most 5 entries "
+                    "total — if there are more than 5 distinct facts after "
+                    "merging, keep the 5 most significant or specific ones."
+                ),
+            },
+            {
+                "role": "user",
+                "content": "\n".join(extraction.key_figures),
+            },
+        ],
+        response_format=KeyFiguresList,
+    )
+
+    result = completion.choices[0].message.parsed
+    if result:
+        extraction.key_figures = result.key_figures
+
+    return extraction
