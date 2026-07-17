@@ -7,10 +7,33 @@ from app.synthesis.synthesizer import synthesize_snapshot
 from app.extraction.extractor import extract_facts
 from app.ingestion.web_search import fetch_sources, dedupe_by_url
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+
+def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={
+            "detail": (
+                "Whoa, slow down! I'm a solo dev running this on my own "
+                "API credits, so I've capped it at 5 sifts per hour per "
+                "person. Come back in a bit, or reach out if you want to "
+                "chat about the project."
+            )
+        },
+    )
+
+limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(title="Sift")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,22 +46,23 @@ app.add_middleware(
 _cache: dict[str, Snapshot] = {}
 
 @app.post("/api/snapshot", response_model=Snapshot)
-def get_snapshot(request: SnapshotRequest) -> Snapshot:
+@limiter.limit("5/hour")
+def get_snapshot(request: Request, body: SnapshotRequest) -> Snapshot:
 
-    cache_key = request.query.lower()
+    cache_key = body.query.lower()
     if cache_key in _cache:
         return _cache[cache_key]
     
-    sources = fetch_sources(request.query)
+    sources = fetch_sources(body.query)
 
     if not sources:
         raise HTTPException(
             status_code=404,
-            detail=f"No information found for '{request.query}'. Try a more specific company name.",
+            detail=f"No information found for '{body.query}'. Try a more specific company name.",
         )
 
     try:
-        extraction = extract_facts(request.query, sources)
+        extraction = extract_facts(body.query, sources)
 
         if (
             not extraction.description
@@ -47,13 +71,13 @@ def get_snapshot(request: SnapshotRequest) -> Snapshot:
         ):
             raise HTTPException(
                 status_code=404,
-                detail=f"No relevant information found for '{request.query}'. Try a more specific company name.",
+                detail=f"No relevant information found for '{body.query}'. Try a more specific company name.",
             )
 
         if not extraction.founder_mentions:
             founder_sources = fetch_sources(f"{extraction.company_name} founders co-founder")
             sources = dedupe_by_url(sources + founder_sources)
-            extraction = extract_facts(request.query, sources)
+            extraction = extract_facts(body.query, sources)
 
        
 
@@ -86,3 +110,4 @@ def get_snapshot(request: SnapshotRequest) -> Snapshot:
 
     _cache[cache_key] = snapshot
     return snapshot
+
