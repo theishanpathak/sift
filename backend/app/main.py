@@ -21,8 +21,8 @@ def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
         content={
             "detail": (
                 "Whoa, slow down! I'm a solo dev running this on my own "
-                "API credits, so I've capped it at 5 sifts per hour per "
-                "person. Come back in a bit, or reach out if you want to "
+                "API credits. "
+                "Come back in a bit, or reach out if you want to "
                 "chat about the project."
             )
         },
@@ -57,7 +57,7 @@ app.add_middleware(
 _cache: dict[str, Snapshot] = {}
 
 @app.post("/api/snapshot", response_model=Snapshot)
-@limiter.limit("5/hour")
+@limiter.limit("20/hour")
 def get_snapshot(request: Request, body: SnapshotRequest) -> Snapshot:
 
     cache_key = body.query.lower()
