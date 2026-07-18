@@ -27,8 +27,19 @@ def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
             )
         },
     )
+def get_real_client_ip(request: Request) -> str:
+    """
+    Render (and most hosting platforms) sit the app behind a reverse proxy,
+    so request.client.host is the proxy's address, not the real visitor's.
+    The real IP is passed in the X-Forwarded-For header instead.
+    """
+    forwarded = request.headers.get("x-forwarded-for")
+    print(f"request.client.host = {request.client.host}, X-Forwarded-For = {forwarded}")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return get_remote_address(request)
 
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_real_client_ip)
 
 app = FastAPI(title="Sift")
 app.state.limiter = limiter
