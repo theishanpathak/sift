@@ -38,7 +38,7 @@ app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
 app.add_middleware(
     CORSMiddleware,
     # reminder to change it to my frontend url before deployment
-    allow_origins=["*"],
+    allow_origins=["https://sift-7xp1.onrender.com"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -111,3 +111,6 @@ def get_snapshot(request: Request, body: SnapshotRequest) -> Snapshot:
     _cache[cache_key] = snapshot
     return snapshot
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
