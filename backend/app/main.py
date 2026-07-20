@@ -7,7 +7,7 @@ from app.synthesis.synthesizer import synthesize_snapshot
 from app.extraction.extractor import extract_facts
 from app.ingestion.web_search import fetch_sources, dedupe_by_url
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 
 from slowapi import Limiter
@@ -125,3 +125,9 @@ def get_snapshot(request: Request, body: SnapshotRequest) -> Snapshot:
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.delete("/cache", status_code=status.HTTP_204_NO_CONTENT)
+def delete_cache():
+    _cache.clear()
+    return
