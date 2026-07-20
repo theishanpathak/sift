@@ -7,13 +7,14 @@ from app.synthesis.synthesizer import synthesize_snapshot
 from app.extraction.extractor import extract_facts
 from app.ingestion.web_search import fetch_sources, dedupe_by_url
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Request, status, Header
 from fastapi.responses import JSONResponse
 
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
+import os
 
 def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
     return JSONResponse(
@@ -127,7 +128,11 @@ def health():
     return {"status": "ok"}
 
 
+CACHE_ADMIN_KEY = os.getenv("CACHE_ADMIN_KEY")
+
 @app.delete("/cache", status_code=status.HTTP_204_NO_CONTENT)
-def delete_cache():
+def delete_cache(x_admin_key: str = Header(None)):
+    if x_admin_key != CACHE_ADMIN_KEY:
+        raise HTTPException(status_code=403, detail="Not authorized.")
     _cache.clear()
     return
